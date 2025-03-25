@@ -1,0 +1,88 @@
+LOCUS       EU051634                2030 bp    cRNA    linear   VRL 26-JUL-2016
+DEFINITION  Zaire ebolavirus strain Etoumbi spike glycoprotein precursor, gene,
+            complete cds.
+ACCESSION   EU051634
+VERSION     EU051634.1
+KEYWORDS    .
+SOURCE      Zaire ebolavirus
+  ORGANISM  Zaire ebolavirus
+            Viruses; Riboviria; Orthornavirae; Negarnaviricota;
+            Haploviricotina; Monjiviricetes; Mononegavirales; Filoviridae;
+            Orthoebolavirus; Orthoebolavirus zairense.
+REFERENCE   1  (bases 1 to 2030)
+  AUTHORS   Wittmann,T.J., Biek,R., Hassanin,A., Rouquet,P., Reed,P., Yaba,P.,
+            Pourrut,X., Real,L.A., Gonzalez,J.P. and Leroy,E.M.
+  TITLE     Isolates of Zaire ebolavirus from wild apes reveal genetic lineage
+            and recombinants
+  JOURNAL   Proc. Natl. Acad. Sci. U.S.A. 104 (43), 17123-17127 (2007)
+   PUBMED   17942693
+  REMARK    Erratum:[Proc Natl Acad Sci U S A. 2007 Dec 4;104(49):19656]
+REFERENCE   2  (bases 1 to 2030)
+  AUTHORS   Leroy,E.M., Wittmann,T., Biek,R. and Hassanin,A.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (20-JUL-2007) UR178, IRD, CIRMF, Franceville, HO BP 769,
+            Gabon
+FEATURES             Location/Qualifiers
+     source          1..2030
+                     /organism="Zaire ebolavirus"
+                     /mol_type="viral cRNA"
+                     /strain="Etoumbi"
+                     /isolation_source="serum"
+                     /host="Homo sapiens"
+                     /db_xref="taxon:186538"
+                     /geo_loc_name="Gabon"
+                     /collection_date="May-2005"
+     CDS             1..2030
+                     /exception="RNA editing"
+                     /note="GP; additional A residue added"
+                     /codon_start=1
+                     /product="spike glycoprotein precursor"
+                     /protein_id="ABW34742.1"
+                     /translation="MGITGILQLPRDRFKRTSFFLWVIILFQRTFSIPLGVIHNSTLQ
+                     VSDVDKLVCRDKLSSTNQLRSVGLNLEGNGVATDVPSATKRWGFRSGVPPKVVNYEAG
+                     EWAENCYNLEIKKPDGSECLPAAPDGIRGFPRCRYVHKVSGTGPCAGDFAFHKEGAFF
+                     LYDRLASTVIYRGTTFAEGVVAFLILPQAKKDFFSSHPLREPVNATEDPSSGYYSTTI
+                     RYQATGFGTNETEYLFEVDNLTYVQLESRFTPQFLLQLNETIYASGKRSNTTGKLIWK
+                     VNPEIDTTIGEWAFWETKKTSLGKIRSEELSFTAVSNGAKDIGGQSPARTSSDPETYT
+                     TTEDHKIMASENSSTMVQVHNQGREAAVSHLITLATISTSPQSPTTKPGQDNSTHNTP
+                     VYKLDISEATQVEQHHRRTDNDSTASDTPPATTAAGPPKAENINTSKSADSLDPATTT
+                     SPQNYSETAGNNNTHHQDTGEESAGSGKLGLITNTIAGVAGLITGGRRTRREAIVNAQ
+                     PKCNPNLHYWTTQDEGAAIGLAWIPYFGPAAEGIYTEGLMHNQDGLICGLRQLANETT
+                     QALQLFLRATTELRTFSILNRKAIDFLLQRWGGTCHILGPDCCIEPHDWTKNITDKID
+                     QIIHDFVDKTLPDQGDNDNWWTGWRQWIPAGIGVTGVIIAVIALFCICKFVL"
+ORIGIN      
+        1 atgggtatta caggaatatt gcagttacct cgtgatcgat tcaagaggac atcattcttt
+       61 ctttgggtaa ttatcctttt ccaaagaaca ttttccatcc cacttggagt catccacaat
+      121 agcacattac aagttagtga tgtcgacaaa ctagtttgtc gtgacaaact gtcatccaca
+      181 aatcaattga gatcagttgg actgaatctc gaagggaatg gagtggcaac tgacgtgcca
+      241 tctgcaacta aaagatgggg cttcaggtcc ggtgtccctc caaaggtggt caattatgaa
+      301 gctggtgaat gggctgaaaa ctgctacaat cttgaaatca aaaaacctga cgggagtgag
+      361 tgtctaccag cagcgccaga cgggattcgg ggcttccccc ggtgccggta tgtgcacaaa
+      421 gtatcaggaa cgggaccgtg tgccggagac tttgccttcc acaaagaggg tgctttcttc
+      481 ctgtacgatc gacttgcttc cacagttatc taccgaggaa cgactttcgc tgaaggtgtc
+      541 gttgcatttc tgatactgcc ccaagctaag aaggacttct tcagctcaca ccccttgaga
+      601 gagccggtca atgcaacgga ggacccgtcc agtggctact attctaccac aattagatat
+      661 caggctaccg gttttggaac caatgagacg gagtacttgt tcgaggttga caacctgacc
+      721 tacgtccaac ttgaatcaag attcacgcca cagtttttgc tccagctgaa tgagacaata
+      781 tatgcaagtg ggaaaaggag caacaccacg ggaaaactaa tttggaaggt caaccccgaa
+      841 attgatacaa caatcgggga gtgggccttc tgggaaacta aaaaaacctc actagaaaaa
+      901 ttcgcagtga agagttgtct ttcacagctg tatcaaacgg agccaaagac atcggtggtc
+      961 agagtccggc gcgaacttct tccgacccag agacctacac aacaactgaa gaccacaaaa
+     1021 tcatggcttc agaaaattcc tctacaatgg ttcaagtgca caatcaagga agggaagctg
+     1081 cagtgtcgca tctgataacc cttgccacaa tctccacgag tcctcaatcc cccacaacca
+     1141 aaccaggtca ggacaacagc acccataata cacccgtgta taaacttgac atctctgagg
+     1201 caactcaagt tgaacaacat catcgcagaa cagacaacga cagcacagcc tccgacactc
+     1261 cccccgccac gaccgcagcc ggacccccaa aagcagagaa catcaacacg agcaagagcg
+     1321 ctgactccct ggaccccgcc accacgacaa gtccccaaaa ctacagcgag accgctggca
+     1381 acaacaacac tcatcaccaa gataccggag aagagagtgc cggcagcggg aagctgggct
+     1441 tgattaccaa tactattgct ggagtcgcag gactgatcac aggcgggaga agaactcgaa
+     1501 gagaagcaat tgtcaatgct caacccaaat gcaaccccaa tctacattac tggactactc
+     1561 aggatgaagg tgctgcaatc ggattggcct ggataccata tttcgggcca gcagccgagg
+     1621 gaatttacac agaggggcta atgcacaatc aagatggttt aatctgtgga ttgaggcagc
+     1681 tggccaatga gacgactcaa gctcttcaac tgttcctgag agccacaact gagctacgca
+     1741 ccttttcaat cctcaaccgt aaggcaattg atttcttgct gcagcgatgg ggcggcacat
+     1801 gccacatttt gggaccggac tgctgtatcg aaccacatga ttggaccaag aacataacag
+     1861 acaaaattga tcagattatt catgattttg ttgataaaac ccttccggac cagggggaca
+     1921 atgacaattg gtggactgga tggagacaat ggataccggc aggtattgga gttacaggcg
+     1981 ttataattgc agttatcgct ttattctgta tatgcaaatt tgtcctttag
+//

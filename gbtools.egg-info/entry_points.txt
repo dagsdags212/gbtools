@@ -1,0 +1,2 @@
+[console_scripts]
+gbtools = gbtools.cli:cli
