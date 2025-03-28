@@ -56,7 +56,6 @@ class GenbankRecord:
             self.data = gbk
         else:
             raise ValueError("format not supported")
-        self.genes = self._get_genes()
 
     def __repr__(self) -> str:
         return f"GenbankRecord(id={self.id},description={self.description})"
@@ -80,12 +79,12 @@ class GenbankRecord:
     def annotations(self) -> dict[str, str]:
         return self.data.annotations
 
-    def _get_genes(self):
-        gene_list = []
+    def get_features(self, feat_type: str="CDS"):
+        assert feat_type in ["CDS", "gene"], f"Error: invalid feature type, must be `CDS` or `gene` (feat_type={feat_type})"
+        features = []
         for f in self.data.features:
-            if f.type == "CDS":
-                start = int(f.location.start)
-                end = int(f.location.end)
+            if f.type == feat_type:
+                start, end = int(f.location.start), int(f.location.end)
                 gene = Gene(
                     name=f.qualifiers.get("gene", [""])[0],
                     source_id=self.data.id,
@@ -96,14 +95,36 @@ class GenbankRecord:
                     end=end,
                     strand=f.location.strand,
                 )
-                gene_list.append(gene)
+                features.append(gene)
 
-        return gene_list
+        return features
 
-    def tabulate(self) -> pl.DataFrame:
+    def extract_seq(self, gene: str, moltype: str="DNA") -> Optional[str]:
+        """Extract the DNA or protein sequence of a gene if annotation is present in the record."""
+        if moltype not in ["DNA", "PROTEIN"]:
+            raise ValueError(f"Invalid moltype, expecting `DNA` or `PROTEIN` (moltype={moltype})")
+
+        cds_table = self.tabulate("CDS")
+        # Exit if gene is not in the table.
+        if gene not in cds_table["name"]:
+            print(f"Sequence not found (gene={gene})")
+            return
+
+        # Return the longer sequence if multiple hits were found.
+        if moltype == "DNA":
+            gene_hits = cds_table.filter(pl.col("name") == gene)["seq"]
+            return str(max(gene_hits.to_list(), key=len))
+        elif moltype == "PROTEIN":
+            prot_hits = cds_table.filter(pl.col("name") == gene)["translation"]
+            return max(prot_hits.to_list(), key=len)
+
+
+    def tabulate(self, feat_type: str="CDS") -> pl.DataFrame:
         """Print a table for annotated genes"""
-        data = {f: [] for f in self.genes[0].to_dict().keys()}
-        for gene in self.genes:
+        assert feat_type in ["CDS", "gene"], f"Error: invalid feature type, must be `CDS` or `gene` (feat_type={feat_type})"
+        cds = self.get_features(feat_type)
+        data = {f: [] for f in cds[0].to_dict().keys()}
+        for gene in cds:
             for k, v in vars(gene).items():
                 data[k].append(v)
         return pl.DataFrame(data)
@@ -111,7 +132,7 @@ class GenbankRecord:
     def gene_tree(self) -> None:
         """Print a tree hierarchy for annotated genes"""
         root = Tree(self.id)
-        for gene in self.genes:
+        for gene in self.get_features("CDS"):
             child = Tree(gene.name)
             child.add(f"id: {gene.source_id}")
             child.add(f"length: {gene.end - gene.start}")
@@ -122,7 +143,7 @@ class GenbankRecord:
         rprint(root)
 
     def to_dict(self) -> dict[str, Gene]:
-        return {gene.name.replace(" CDS", ""): gene for gene in self.genes}
+        return {gene.name.replace(" CDS", ""): gene for gene in self.get_features("CDS")}
 
 class Genbank:
     """
@@ -147,7 +168,7 @@ class Genbank:
     def info(cls, id: str) -> None:
         """Print metadata associated with a GenBank record."""
         # Authenticate with server.
-        email = os.environ.get("EMAIL")
+        email = os.environ.get("EMAIL", "jegsamson.dev@gmail.com")
         api_key = os.environ.get("NCBI_API_KEY")
         if email:
             Entrez.email = email
@@ -162,7 +183,7 @@ class Genbank:
     @classmethod
     def load(cls, id: str) -> SeqRecord:
         """Loads a Genbank record in memory."""
-        email = os.environ.get("EMAIL")
+        email = os.environ.get("EMAIL", "jegsamson.dev@gmai.com")
         api_key = os.environ.get("NCBI_API_KEY")
         if email:
             Entrez.email = email
@@ -180,7 +201,7 @@ class Genbank:
     def fetch(cls, id: str, outpath: Optional[str | Path] = None) -> Path:
         """Retrieve a local copy of a GenBank record from NCBI."""
         # Authenticate with server.
-        email = os.environ.get("EMAIL")
+        email = os.environ.get("EMAIL", "jegsamson.dev@gmail.com")
         api_key = os.environ.get("NCBI_API_KEY")
         if email:
             Entrez.email = email
