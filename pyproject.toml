@@ -22,4 +22,4 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project.scripts]
-gbtools = "gbtools.cli:cli"
+gbtools = "gbtools.cli:app"
