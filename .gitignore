@@ -1,2 +1,6 @@
-__pycache__
 dev.py
+__pycache__
+
+# Build directories.
+*.egg-info*
+build
