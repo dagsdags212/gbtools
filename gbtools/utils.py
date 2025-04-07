@@ -18,12 +18,12 @@ class EntrezConfig:
     """
 
     email: Optional[str]
-    api_key: Optional[str]
+    api_key: Optional[str] = None
     max_tries: int = 3
     sleep_between_tries: int = 5
-    config_path: Path = Path("/tmp/gbtools_auth.json")
 
     def __post_init__(self) -> None:
+        self.path: Path = Path('/tmp/gbtools_auth.json')
         if self.api_key:
             self.allowed_queries_per_second = 10
         else:
@@ -43,7 +43,7 @@ class EntrezConfig:
             max_tries=self.max_tries,
             sleep_between_tries=self.sleep_between_tries,
         )
-        with self.config_path.open("w") as fh:
+        with self.path.open("w") as fh:
             json.dump(data, fh)
 
     def to_json(self) -> dict[str, Optional[str | int]]:
@@ -83,7 +83,7 @@ def load_config() -> EntrezConfig:
 
 
 def fetch_genbank_handle(
-    id: str, config: Optional[EntrezConfig] = None, verbose: bool = False, **kwargs
+    id: str, config: Optional[EntrezConfig] = None, verbose: bool = False
 ) -> TextIOWrapper:
     """Retrieve a Genbank handle from NCBI using an accession identifier.
 

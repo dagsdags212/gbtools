@@ -1,12 +1,12 @@
 import json
 import os
+import sys
 from pathlib import Path
 from typing import Optional
 
 import typer
-from rich.console import Console
 from rich.pretty import pprint
-from rich.table import Table
+from rich.progress import Progress, SpinnerColumn, TextColumn
 from typing_extensions import Annotated
 
 from gbtools.utils import *
@@ -19,24 +19,56 @@ ECONFIG = load_config()
 
 @app.command()
 def fetch(
-    id: Annotated[str, typer.Argument()],
+    id: Annotated[Optional[str], typer.Argument()] = None,
     outfile: Annotated[
         Optional[Path],
-        typer.Option("--file", "-f", help="filepath for storing the Genbank record"),
+        typer.Option("--output", "-o", help="filepath for storing the Genbank record"),
+    ] = None,
+    inputfile: Annotated[
+        Optional[Path],
+        typer.Option("--inputfile", "-i", help="a file containing one Genbank accession per line"),
     ] = None,
     verbose: Annotated[
         bool, typer.Option("--verbose", "-v", help="increase verbosity of program")
     ] = False,
 ):
     """Retrieve a Genbank record from NCBI"""
+    accession_list = None
+    if inputfile:
+        inputfile = Path(inputfile)
+        if not inputfile.exists():
+            raise FileNotFoundError('input file does not exist')
+
+        accession_list = inputfile.read_text().split('\n')[:-1]
+    else:
+        accession_list = [id]
+
+    progress_bar = Progress(
+        SpinnerColumn(), 
+        TextColumn("[progress.description]{task.description}"),
+        transient=True
+    )
     if outfile is None:
-        handle = fetch_genbank_handle(id=id, config=ECONFIG, verbose=verbose)
-        print(handle.read())
+        with progress_bar:
+            progress_bar.add_task(description="Fetching Genbank records", total=None)
+            for acc in accession_list:
+                handle = fetch_genbank_handle(id=acc, config=ECONFIG, verbose=verbose)
+                print(handle.read())
     else:
         outfile = Path(outfile)
         if not str(outfile).endswith(".gbk") and not str(outfile).endswith(".gb"):
             outfile = Path(str(outfile) + ".gbk")
-        fetch_genbank_record(id=id, outfile=outfile, config=ECONFIG, verbose=verbose)
+
+        gbk_handles = []
+        with progress_bar:
+            progress_bar.add_task(description="Fetching Genbank records", total=None)
+            for acc in accession_list:
+                record = fetch_genbank_handle(id=acc, config=ECONFIG, verbose=verbose)
+                gbk_handles.append(record)
+
+        with outfile.open('a') as fh:
+            for rec in gbk_handles:
+                fh.write(rec.read())
 
 
 @app.command()
@@ -50,12 +82,23 @@ def metadata(
     record = fetch_genbank_record(id=id, config=ECONFIG, verbose=verbose)
     metadata = vars(record)
     metadata.pop("features")
+    metadata.pop('_seq')
+    metadata['annotations']['references'] = [
+    {
+        'pubmed_id': ref.pubmed_id,
+        'title': ref.title,
+        'authors': ref.authors,
+        'journal': ref.journal,
+        'medline_id': ref.medline_id,
+        'comment': ref.comment,
+    } for ref in metadata['annotations']['references']
+    ]
     pprint(metadata, expand_all=True)
 
 
 @app.command()
-def extract(
-    file: Annotated[str, typer.Option("--file", "-f", help="path to a Genbank file")],
+def features(
+    file: Annotated[Optional[str], typer.Argument(help="path to a Genbank file")] = None,
     cds: Annotated[
         bool, typer.Option("--cds", "-p", help="extract protein sequences")
     ] = False,
@@ -67,6 +110,13 @@ def extract(
     ] = False,
 ):
     """Get all sequence features from a Genbank record"""
+    # Read for stdin.
+    if file is None:
+        assert sys.stdin.readable()
+        file = Path('/tmp/gbtools_gbk.tmp')
+        with file.open('w') as fh:
+            fh.write(sys.stdin.read())
+            
     gbk = load_gbk(file)
     if cds:
         features = gbk2features(gbk, "cds")
@@ -85,7 +135,7 @@ def extract(
 
 
 @app.command()
-def fasta(
+def seq(
     id: Annotated[Optional[str], typer.Argument(
         help='a Genbank accession'
     )] = None,
@@ -100,7 +150,7 @@ def fasta(
         bool, typer.Option("--verbose", help="increase verbosity of program")
     ] = False,
 ):
-    """Extract the sequence from Genbank record in FASTA format"""
+    """Retrieve sequence from Genbank record in FASTA format"""
     if file:
         if outfile:
             gbk2fasta(infile=file, outfile=outfile, verbose=verbose, config=ECONFIG)
@@ -116,13 +166,13 @@ def fasta(
             print_fasta(fa_record)
 
 @app.command()
-def igr(
+def between(
     gbk: Annotated[str, typer.Argument(help='path to Genbank file')],
     gene1: Annotated[str, typer.Argument(help='name of first genomic region')],
     gene2: Annotated[str, typer.Argument(help='name of second genomic region')],
-    verbose: Annotated[
-        bool, typer.Option("--verbose", help="increase verbosity of program")
-    ] = False,
+    translate: Annotated[bool, typer.Option(
+        '--translate', '-t', help='convert to amino acid sequence'
+    )] = False,
 ):
     """Extract the sequence between two genomic regions"""
     gbk = load_gbk(filepath=gbk)
@@ -136,7 +186,8 @@ def igr(
 
     start = min(features[gene1].get('pos_end'), features[gene2].get('pos_end'))
     end = max(features[gene1].get('pos_start'), features[gene2].get('pos_start'))
-    subseq = str(gbk.seq)[start:end+1]
+    subseq = gbk.seq[start:end+1]
+    subseq = str(subseq.translate()) if translate else str(subseq)
     
     linewidth = 60
     fa_lines = [f'>IGR between {gene1} and {gene2}']
