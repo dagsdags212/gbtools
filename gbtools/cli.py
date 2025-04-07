@@ -13,24 +13,23 @@ from gbtools.utils import *
 
 app = typer.Typer(no_args_is_help=True)
 
-ECONFIG = EntrezConfig(
-    email=os.environ.get("EMAIL", "jegsamson.dev@gmail.com"),
-    api_key=os.environ.get("NCBI_API_KEY"),
-)
+# Load config file from /tmp/gbtools_auth.json
+ECONFIG = load_config()
 
 
 @app.command()
 def fetch(
     id: Annotated[str, typer.Argument()],
     outfile: Annotated[
-        Path, typer.Option("--file", help="filepath for storing the Genbank record")
-    ] = Path("record.gbk"),
+        Optional[Path],
+        typer.Option("--file", "-f", help="filepath for storing the Genbank record"),
+    ] = None,
     verbose: Annotated[
-        bool, typer.Option("--verbose", help="increase verbosity of program")
+        bool, typer.Option("--verbose", "-v", help="increase verbosity of program")
     ] = False,
 ):
     """Retrieve a Genbank record from NCBI"""
-    if outfile == "":
+    if outfile is None:
         handle = fetch_genbank_handle(id=id, config=ECONFIG, verbose=verbose)
         print(handle.read())
     else:
@@ -66,16 +65,13 @@ def extract(
     tsv: Annotated[
         bool, typer.Option("--tsv", "-t", help="use tabs for separating field columns")
     ] = False,
-    verbose: Annotated[
-        bool, typer.Option("--verbose", help="increase verbosity of program")
-    ] = False,
 ):
     """Get all sequence features from a Genbank record"""
     gbk = load_gbk(file)
     if cds:
-        features = gbk2features(gbk, "cds", verbose=verbose)
+        features = gbk2features(gbk, "cds")
     else:
-        features = gbk2features(gbk, "gene", verbose=verbose)
+        features = gbk2features(gbk, "gene")
 
     sep = "\t" if tsv else ","
 
@@ -90,7 +86,9 @@ def extract(
 
 @app.command()
 def fasta(
-    id: Annotated[Optional[str], typer.Argument()] = None,
+    id: Annotated[Optional[str], typer.Argument(
+        help='a Genbank accession'
+    )] = None,
     file: Annotated[
         Optional[str], typer.Option("--file", "-f", help="path to a Genbank file")
     ] = None,
@@ -116,6 +114,36 @@ def fasta(
         else:
             fa_record = gbk2fasta(id=id, verbose=verbose)
             print_fasta(fa_record)
+
+@app.command()
+def igr(
+    gbk: Annotated[str, typer.Argument(help='path to Genbank file')],
+    gene1: Annotated[str, typer.Argument(help='name of first genomic region')],
+    gene2: Annotated[str, typer.Argument(help='name of second genomic region')],
+    verbose: Annotated[
+        bool, typer.Option("--verbose", help="increase verbosity of program")
+    ] = False,
+):
+    """Extract the sequence between two genomic regions"""
+    gbk = load_gbk(filepath=gbk)
+    features = gbk2features(gbk)
+
+    if gene1 not in features:
+        raise ValueError(f'annotation for gene 1 ({gene1}) not found')
+
+    if gene2 not in features:
+        raise ValueError(f'annotation for gene 2 ({gene2}) not found')
+
+    start = min(features[gene1].get('pos_end'), features[gene2].get('pos_end'))
+    end = max(features[gene1].get('pos_start'), features[gene2].get('pos_start'))
+    subseq = str(gbk.seq)[start:end+1]
+    
+    linewidth = 60
+    fa_lines = [f'>IGR between {gene1} and {gene2}']
+    for i in range(0, len(subseq), linewidth):
+        fa_lines.append(subseq[i:i+60])
+
+    print('\n'.join(fa_lines))
 
 
 @app.command()
